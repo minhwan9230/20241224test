@@ -23,21 +23,21 @@ jobs:
 
       # 3. MySQL Docker 이미지 빌드 및 푸시
       - name: Build MySQL Docker image
-        working-directory: dockerdb # docker-compose.yml 출처 디렉토리로 이동
+        working-directory: db # 출처 디렉토리로 이동
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/db .
 
       - name: Push MySQL Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/db
 
       # 4. Backend Docker 이미지 빌드 및 푸시
       - name: Build Backend Docker image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/backend .
       - name: Push Backend Docker image
         run: |
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend
 
   deploy:
     needs: build_and_push
@@ -56,13 +56,13 @@ jobs:
             if [ "$(sudo docker ps -a -q -f name=dockerbackend)" ]; then
               sudo docker rm -f dockerbackend
             fi
-            if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb)" ]; then
-              sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
+            if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/db)" ]; then
+              sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/db
             fi
-            if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend)" ]; then
-              sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
+            if [ "$(sudo docker images -q ${{ secrets.DOCKERHUB_USERNAME }}/backend)" ]; then
+              sudo docker rmi -f ${{ secrets.DOCKERHUB_USERNAME }}/backend
             fi
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
-            sudo docker run -d -p 3308:3306 --name dockerdb -v db_volume:/var/lib/mysql ${{ secrets.DOCKERHUB_USERNAME }}/dockerdb
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
-            sudo docker run -d -p 8080:8080 --name dockerbackend --add-host=host.docker.internal:172.17.0.1 ${{ secrets.DOCKERHUB_USERNAME }}/dockerbackend
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/db
+            sudo docker run -d -p 3308:3306 --name dockerdb -v db_volume:/var/lib/mysql ${{ secrets.DOCKERHUB_USERNAME }}/db
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend
+            sudo docker run -d -p 8080:8080 --name dockerbackend --add-host=host.docker.internal:172.17.0.1 ${{ secrets.DOCKERHUB_USERNAME }}/backend
